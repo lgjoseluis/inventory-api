@@ -75,7 +75,7 @@ public class CategoryService implements ICategoryService{
 			if(categorySave != null) {
 				list.add(categorySave);
 				response.getCategoryResponse().setCategory(list);
-				response.setMetadata("OK", "0", "Datos guardado con éxito");
+				response.setMetadata("OK", "0", "Datos guardados con éxito");
 				return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
 			}
 			
@@ -84,6 +84,41 @@ public class CategoryService implements ICategoryService{
 				
 		}catch(Exception ex) {
 			response.setMetadata("ERR", "-1", "No se puede gardar la categoría");
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@Override
+	@Transactional
+	public ResponseEntity<CategoryResponseRest> update(Category category, Long id){
+		CategoryResponseRest response = new CategoryResponseRest();
+		List<Category> list = new ArrayList<>();
+		
+		try {
+			Optional<Category> categoryFind = categoryDao.findById(id);
+			
+			if(categoryFind.isPresent()) {
+				categoryFind.get().setName(category.getName());
+				categoryFind.get().setDescription(category.getDescription());
+				
+				Category categoryUpdate = categoryDao.save(categoryFind.get());
+				
+				if(categoryUpdate != null) {				
+					list.add(categoryUpdate);
+					response.getCategoryResponse().setCategory(list);
+					response.setMetadata("OK", "0", "Datos actualizados con éxito");
+					return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
+				}
+				
+				response.setMetadata("KO", "1", "Categoría no actualizada, revisar los datos");
+				return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.BAD_REQUEST);
+			}
+			
+			response.setMetadata("KO", "1", "Categoría no encontrada");
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.NOT_FOUND);
+				
+		}catch(Exception ex) {
+			response.setMetadata("ERR", "-1", "No se puede actualizar la categoría");
 			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
