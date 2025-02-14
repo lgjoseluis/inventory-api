@@ -122,4 +122,30 @@ public class CategoryService implements ICategoryService{
 			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@Override
+	@Transactional
+	public ResponseEntity<CategoryResponseRest> deleteById(Long id){
+		CategoryResponseRest response = new CategoryResponseRest();
+		
+		try {
+			Optional<Category> categoryFind = categoryDao.findById(id);
+			
+			if(categoryFind.isPresent()) {
+				categoryDao.delete(categoryFind.get());
+							
+				response.setMetadata("OK", "0", "Categoría eliminada");
+				
+				return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
+			}
+			
+			response.setMetadata("KO", "1", "Categoría no encontrada");
+			
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.NOT_FOUND);
+		}catch(Exception ex) {
+			response.setMetadata("ERR", "-1", "No se puede eliminar la categoría");
+			
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }
