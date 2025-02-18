@@ -97,4 +97,15 @@ public class ProductRestController {
 		
 		return response;
 	}
+	
+	/**
+	 * Find all
+	 * @return
+	 */
+	@GetMapping
+	public ResponseEntity<ProductResponseRest> findAll(){
+		ResponseEntity<ProductResponseRest> response = service.findAll();
+		
+		return response;
+	}
 }
