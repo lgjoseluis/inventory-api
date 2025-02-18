@@ -14,6 +14,7 @@ import com.company.inventory.dao.IProductDao;
 import com.company.inventory.model.Category;
 import com.company.inventory.model.Product;
 import com.company.inventory.response.ProductResponseRest;
+import com.company.inventory.util.Util;
 
 @Service
 public class ProductService implements IProductService {
@@ -54,6 +55,38 @@ public class ProductService implements IProductService {
 			response.setMetadata("KO", "1", "Producto no guardado, revisar los datos");
 			
 			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			response.setMetadata("ERR", "-1", "No se puede gardar el producto");
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public ResponseEntity<ProductResponseRest> findById(Long id) {
+		ProductResponseRest response = new ProductResponseRest();
+		List<Product> products = new ArrayList<>();
+		
+		try {
+			Optional<Product> product = productDao.findById(id);
+			
+			if(product.isEmpty()) {
+				response.setMetadata("KO", "1", "Producto no encontrado");
+				
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			byte[] picture = Util.decompressZLib(product.get().getPicture());
+			
+			product.get().setPicture(picture);
+			
+			products.add(product.get());
+			
+			response.setMetadata("OK", "0", "Consulta exitosa");
+			response.getProductResponse().setProducts(products);
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);			
 		} catch (Exception e) {
 			response.setMetadata("ERR", "-1", "No se puede gardar el producto");
 			
