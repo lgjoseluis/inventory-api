@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -105,6 +106,43 @@ public class ProductRestController {
 	@GetMapping
 	public ResponseEntity<ProductResponseRest> findAll(){
 		ResponseEntity<ProductResponseRest> response = service.findAll();
+		
+		return response;
+	}
+	
+	/**
+	 * Update product
+	 * @param picture
+	 * @param name
+	 * @param price
+	 * @param account
+	 * @param id
+	 * @param categoryId
+	 * @return
+	 */
+	@PutMapping("/{id}")
+	public ResponseEntity<ProductResponseRest> update(
+			@RequestParam MultipartFile picture,
+			@RequestParam String name,
+			@RequestParam float price,
+			@RequestParam int account,			
+			@RequestParam Long categoryId,
+			@PathVariable Long id
+		){
+		Product product = new Product();
+		
+		product.setName(name);
+		product.setPrice(price);
+		product.setAccount(account);		
+		
+		try {
+			product.setPicture(Util.compressZLib(picture.getBytes()));
+		} catch (IOException e) {
+			System.out.println("ERROR");
+			e.printStackTrace();
+		}
+		
+		ResponseEntity<ProductResponseRest> response = service.update(product, id, categoryId);
 		
 		return response;
 	}

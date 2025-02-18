@@ -180,4 +180,51 @@ public class ProductService implements IProductService {
 			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@Override
+	@Transactional
+	public ResponseEntity<ProductResponseRest> update(Product product, Long id, Long categoryId) {
+		ProductResponseRest response = new ProductResponseRest();
+		List<Product> products = new ArrayList<>();
+		
+		try {
+			Optional<Category> category = categoryDao.findById(categoryId);
+			
+			if(category.isEmpty()) {
+				response.setMetadata("KO", "1", "Categoría de producto no encontrada");
+				
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			Optional<Product> productSearch = productDao.findById(id);
+			
+			if(productSearch.isEmpty()) {
+				response.setMetadata("KO", "1", "Producto no encontrado");
+				
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			productSearch.get().setAccount(product.getAccount());			
+			productSearch.get().setName(product.getName());
+			productSearch.get().setCategory(category.get());
+			productSearch.get().setPrice(product.getPrice());
+			productSearch.get().setPicture(product.getPicture());								
+			
+			Product productSave = productDao.save(productSearch.get());
+			
+			products.add(productSave);
+			response.getProductResponse().setProducts(products);
+			response.setMetadata("OK", "0", "Datos actualizados con éxito");
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);			
+		} catch(IllegalArgumentException e) {
+			response.setMetadata("KO", "1", "Producto no actualizado, revisar los datos");
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			response.setMetadata("ERR", "-1", "No se puede actualizar el producto");
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }
