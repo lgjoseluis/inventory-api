@@ -88,10 +88,43 @@ public class ProductService implements IProductService {
 			
 			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);			
 		} catch (Exception e) {
-			response.setMetadata("ERR", "-1", "No se puede gardar el producto");
+			response.setMetadata("ERR", "-1", "No se puede consultar el producto");
 			
 			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public ResponseEntity<ProductResponseRest> findByName(String name) {
+		ProductResponseRest response = new ProductResponseRest();
+		List<Product> products = new ArrayList<>();
+		
+		try {
+			List<Product> productsList = productDao.findByNameContainingIgnoreCase(name);
+			
+			if(productsList.isEmpty()) {
+				response.setMetadata("KO", "1", "Sin resultados");
+				
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			productsList.stream().forEach((p)->{
+				byte[] picture = Util.decompressZLib(p.getPicture());
+				
+				p.setPicture(picture);
+				
+				products.add(p);
+			});
+			
+			response.setMetadata("OK", "0", "Consulta exitosa");
+			response.getProductResponse().setProducts(products);
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);			
+		} catch (Exception e) {
+			response.setMetadata("ERR", "-1", "No se puede consultar el producto");
+			
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }
