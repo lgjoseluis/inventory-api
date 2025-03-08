@@ -18,7 +18,7 @@ import com.company.inventory.services.ICategoryService;
 
 @CrossOrigin(origins= {"http://localhost:4200"})
 @RestController
-@RequestMapping("/api/v1/category")
+@RequestMapping("/api/v1/categories")
 public class CategoryRestController {
 	@Autowired
 	private ICategoryService service;
